@@ -1,5 +1,15 @@
 # Dash GPT-3 Chatbot
 
+---
+
+2023-12-31
+
+This is the updated version of [Dash GPT-3 Chatbot](<https://github.com/plotly/dash-sample-apps/tree/main/apps/dash-gpt3-chatbot>).
+
+Python 3.12.0
+
+---
+
 *Disclaimer: This app was created to help you learn Dash and try the OpenAI API beta. Feel free to use the source code for building private prototypes. If you are planning to deploy GPT-3 based apps, please make sure to reach out to support@openai.com for a proper review.*
 
 ![demo](images/demo.gif)
