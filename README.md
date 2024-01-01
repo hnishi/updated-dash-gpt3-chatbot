@@ -16,6 +16,14 @@ docker compose up
 
 Then, visit <http://127.0.0.1:8050/>.
 
+## Cloud Run
+
+Deploy
+
+```bash
+gcloud run deploy --update-env-vars OPENAI_API_KEY=sk-xxx
+```
+
 ---
 
 *Disclaimer: This app was created to help you learn Dash and try the OpenAI API beta. Feel free to use the source code for building private prototypes. If you are planning to deploy GPT-3 based apps, please make sure to reach out to support@openai.com for a proper review.*
