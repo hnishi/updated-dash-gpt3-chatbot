@@ -8,6 +8,14 @@ This is the updated version of [Dash GPT-3 Chatbot](<https://github.com/plotly/d
 
 Python 3.12.0
 
+## Docker
+
+```bash
+docker compose up
+```
+
+Then, visit <http://127.0.0.1:8050/>.
+
 ---
 
 *Disclaimer: This app was created to help you learn Dash and try the OpenAI API beta. Feel free to use the source code for building private prototypes. If you are planning to deploy GPT-3 based apps, please make sure to reach out to support@openai.com for a proper review.*
