@@ -1,15 +1,15 @@
 from textwrap import dedent
 
 import dash
-import dash_html_components as html
-import dash_core_components as dcc
+from dash import html
+from dash import dcc
 import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output, State
 from openai import OpenAI
 from dotenv import load_dotenv
 
 load_dotenv()
-client = OpenAI()
+# client = OpenAI()
 # client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 
@@ -79,10 +79,31 @@ conversation = html.Div(
     style={
         "overflow-y": "auto",
         "display": "flex",
-        "height": "calc(90vh - 132px)",
+        # q: What does the following line do?
+        # a: It sets the height of the div to 90% of the viewport height minus 132px
+        # "height": "calc(90vh - 132px)",
+        "height": "calc(80vh - 132px)",
         "flex-direction": "column-reverse",
     },
 )
+
+api_key_input = dbc.InputGroup(
+    children=[
+        dbc.Input(
+            id="api-key-input", placeholder="Set your OpenAI API Key", type="text"
+        ),
+    ]
+)
+
+api_key_alert = dbc.Alert(
+    "API Key is not set.",
+    id="api-key-alert",
+    dismissable=True,
+    fade=False,
+    is_open=True,
+    color="danger",
+)
+
 
 controls = dbc.InputGroup(
     children=[
@@ -95,7 +116,13 @@ controls = dbc.InputGroup(
 app.layout = dbc.Container(
     fluid=False,
     children=[
+        # q: How can I change the logo?
+        # a: Replace the file dash-logo.png in the assets folder
         Header("Dash GPT-3 Chatbot", app),
+        # q: what does the following line do?
+        # a: it adds a horizontal line
+        api_key_input,
+        api_key_alert,
         html.Hr(),
         dcc.Store(id="store-conversation", data=""),
         conversation,
@@ -103,6 +130,17 @@ app.layout = dbc.Container(
         dbc.Spinner(html.Div(id="loading-component")),
     ],
 )
+
+
+@app.callback(
+    Output("api-key-alert", "is_open"),
+    [Input("api-key-input", "value")],
+    [State("api-key-alert", "is_open")],
+)
+def toggle_alert_no_fade(api_key, is_open):
+    if api_key is not None and api_key != "":
+        return False
+    return True
 
 
 @app.callback(
@@ -125,10 +163,23 @@ def clear_input(n_clicks, n_submit):
 
 @app.callback(
     [Output("store-conversation", "data"), Output("loading-component", "children")],
+    # q: What does the following line do?
+    # a: It triggers the callback when the button with id "submit" is clicked
+    # q: Describe Input() function arguments
+    # a: The first argument is the id of the component that triggers the callback.
+    #   The second argument is the property of the component that triggers the callback.
     [Input("submit", "n_clicks"), Input("user-input", "n_submit")],
-    [State("user-input", "value"), State("store-conversation", "data")],
+    [
+        State("user-input", "value"),
+        State("store-conversation", "data"),
+        State("api-key-input", "value"),
+    ],
 )
-def run_chatbot(n_clicks, n_submit, user_input, chat_history):
+def run_chatbot(n_clicks, n_submit, user_input, chat_history, api_key):
+    if api_key is None or api_key == "":
+        return chat_history, None
+    client = OpenAI(api_key=api_key)
+
     if n_clicks == 0 and n_submit is None:
         return "", None
 
@@ -139,11 +190,11 @@ def run_chatbot(n_clicks, n_submit, user_input, chat_history):
 
     prompt = dedent(
         f"""
-    {description}
+        {description}
 
-    You: Hello {name}!
-    {name}: Hello! Glad to be talking to you today.
-    """
+        You: Hello {name}!
+        {name}: Hello! Glad to be talking to you today.
+        """
     )
 
     # First add the user input to the chat history
@@ -173,4 +224,5 @@ def run_chatbot(n_clicks, n_submit, user_input, chat_history):
 
 
 if __name__ == "__main__":
-    app.run_server(host="0.0.0.0", port=8080, debug=False)
+    # app.run_server(host="0.0.0.0", port=8080, debug=False)
+    app.run_server(port=8050, debug=True, host="0.0.0.0", use_reloader=True)
