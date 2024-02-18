@@ -14,7 +14,7 @@ load_dotenv()
 
 
 def Header(name, app):
-    title = html.H1(name, style={"margin-top": 5})
+    title = html.H1(name, style={"marginTop": 5})
     logo = html.Img(
         src=app.get_asset_url("dash-logo.png"), style={"float": "right", "height": 60}
     )
@@ -24,29 +24,29 @@ def Header(name, app):
 def textbox(text, box="AI", name="Philippe"):
     text = text.replace(f"{name}:", "").replace("You:", "")
     style = {
-        "max-width": "60%",
+        "maxWidth": "60%",
         "width": "max-content",
         "padding": "5px 10px",
-        "border-radius": 25,
-        "margin-bottom": 20,
+        "borderRadius": 25,
+        "marginBottom": 20,
     }
 
     if box == "user":
-        style["margin-left"] = "auto"
-        style["margin-right"] = 0
+        style["marginLeft"] = "auto"
+        style["marginRight"] = 0
 
         return dbc.Card(text, style=style, body=True, color="primary", inverse=True)
 
     elif box == "AI":
-        style["margin-left"] = 0
-        style["margin-right"] = "auto"
+        style["marginLeft"] = 0
+        style["marginRight"] = "auto"
 
         thumbnail = html.Img(
             src=app.get_asset_url("Philippe.jpg"),
             style={
-                "border-radius": 50,
+                "borderRadius": 50,
                 "height": 36,
-                "margin-right": 5,
+                "marginRight": 5,
                 "float": "left",
             },
         )
@@ -77,13 +77,13 @@ IMAGES = {"Philippe": app.get_asset_url("Philippe.jpg")}
 conversation = html.Div(
     html.Div(id="display-conversation"),
     style={
-        "overflow-y": "auto",
+        "overflowY": "auto",
         "display": "flex",
         # q: What does the following line do?
         # a: It sets the height of the div to 90% of the viewport height minus 132px
         # "height": "calc(90vh - 132px)",
         "height": "calc(80vh - 132px)",
-        "flex-direction": "column-reverse",
+        "flexDirection": "column-reverse",
     },
 )
 
