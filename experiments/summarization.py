@@ -1,9 +1,12 @@
 # https://python.langchain.com/docs/use_cases/summarization
 # https://zenn.dev/tsuzukia/articles/05bfdcfcf5bd68
 
+from textwrap import dedent
+
 # from langchain_community.document_loaders import UnstructuredURLLoader
 from langchain.chains.summarize import load_summarize_chain
 from langchain_community.document_loaders import WebBaseLoader
+
 # from langchain_openai import ChatOpenAI
 from langchain_openai import AzureChatOpenAI
 from dotenv import load_dotenv
@@ -28,8 +31,8 @@ llm = AzureChatOpenAI(
 loader = WebBaseLoader(url)
 raw_docs = loader.load()
 text_splitter = CharacterTextSplitter.from_tiktoken_encoder(
-    chunk_size=1500,
-    chunk_overlap=0,
+    chunk_size=3000,
+    chunk_overlap=300,
     separator=".",
 )
 texts = text_splitter.split_text(raw_docs[0].page_content)
@@ -46,18 +49,25 @@ def simple():
 
 def map_reduce():
     # map_prompt_template = """以下の文章をテーマ毎にまとめてく下さい。
-    map_prompt_template = """以下の文章の重要部分のみを具体的かつ簡潔まとめてく下さい。
-    ------
-    {text}
-    ------
-    """
+    # map_prompt_template = """以下の文章の重要部分のみを具体的かつ簡潔まとめてく下さい。
+    map_prompt_template = dedent(
+        """
+        以下の文章を情報を落とさないまま、プレゼンテーションの原稿にして下さい。
+        ------
+        {text}
+        ------
+        """
+    )[1:-1]
 
     # map_combine_template = """以下の文章をテーマ毎にまとめてください。
-    map_combine_template = """以下の文章の重要部分のみを具体的かつ簡潔まとめてく下さい。
-    ------
-    {text}
-    ------
-    """
+    map_combine_template = dedent(
+        """
+        以下の文章からプレゼンテーションの原稿の最終版を作成して下さい。
+        ------
+        {text}
+        ------
+        """
+    )[1:-1]
 
     map_first_prompt = PromptTemplate(
         template=map_prompt_template, input_variables=["text"]
@@ -88,7 +98,7 @@ def refine():
     {text}
     ------
     """
-    refine_template = """以下の文章をテーマ毎にまとめてく下さい。
+    refine_template = """以下の文章をテーマ毎にまとめて下さい。
     ------
     {existing_answer}
     {text}
