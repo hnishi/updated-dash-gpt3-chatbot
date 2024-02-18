@@ -7,10 +7,30 @@ import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output, State
 from openai import OpenAI
 from dotenv import load_dotenv
+from langchain.prompts import (
+    ChatPromptTemplate,
+    HumanMessagePromptTemplate,
+    MessagesPlaceholder,
+)
+from langchain.schema import SystemMessage
+from langchain.memory import ConversationSummaryBufferMemory, ChatMessageHistory
+from langchain.chains import ConversationChain
+from langchain.chat_models import ChatOpenAI
+
+from utils.url_loader import get_url_content
 
 load_dotenv()
-# client = OpenAI()
-# client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+description = """
+Philippe is the principal architect at a condo-development firm in Paris. He lives with his girlfriend of five years in a 2-bedroom condo, with a small dog named Coco. Since the pandemic, his firm has seen a  significant drop in condo requests. As such, he’s been spending less time designing and more time on cooking,  his favorite hobby. He loves to cook international foods, venturing beyond French cuisine. But, he is eager  to get back to architecture and combine his hobby with his occupation. That’s why he’s looking to create a  new design for the kitchens in the company’s current inventory. Can you give him advice on how to do that?
+"""
+
+MAX_TOKEN_LIMIT = 1000
+# SYSTEM_PROMPT = dedent(
+#     """
+#     TBD
+#     """
+# )[1:-1]
 
 
 def Header(name, app):
@@ -58,12 +78,7 @@ def textbox(text, box="AI", name="Philippe"):
         raise ValueError("Incorrect option for `box`.")
 
 
-description = """
-Philippe is the principal architect at a condo-development firm in Paris. He lives with his girlfriend of five years in a 2-bedroom condo, with a small dog named Coco. Since the pandemic, his firm has seen a  significant drop in condo requests. As such, he’s been spending less time designing and more time on cooking,  his favorite hobby. He loves to cook international foods, venturing beyond French cuisine. But, he is eager  to get back to architecture and combine his hobby with his occupation. That’s why he’s looking to create a  new design for the kitchens in the company’s current inventory. Can you give him advice on how to do that?
-"""
-
 # Authentication
-
 # Define app
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 server = app.server
@@ -104,6 +119,11 @@ api_key_alert = dbc.Alert(
     color="danger",
 )
 
+url_input = dbc.InputGroup(
+    children=[
+        dbc.Input(id="url-input", placeholder="Set URL (Optional)", type="text"),
+    ]
+)
 
 controls = dbc.InputGroup(
     children=[
@@ -123,6 +143,7 @@ app.layout = dbc.Container(
         # a: it adds a horizontal line
         api_key_input,
         api_key_alert,
+        url_input,
         html.Hr(),
         dcc.Store(id="store-conversation", data=""),
         conversation,
@@ -173,9 +194,10 @@ def clear_input(n_clicks, n_submit):
         State("user-input", "value"),
         State("store-conversation", "data"),
         State("api-key-input", "value"),
+        State("url-input", "value"),
     ],
 )
-def run_chatbot(n_clicks, n_submit, user_input, chat_history, api_key):
+def run_chatbot(n_clicks, n_submit, user_input, chat_history, api_key, url):
     if api_key is None or api_key == "":
         return chat_history, None
     client = OpenAI(api_key=api_key)
@@ -185,6 +207,28 @@ def run_chatbot(n_clicks, n_submit, user_input, chat_history, api_key):
 
     if user_input is None or user_input == "":
         return chat_history, None
+
+    llm = ChatOpenAI(
+        temperature=0,
+    )
+
+    # https://python.langchain.com/docs/modules/memory/adding_memory
+    prompt = ChatPromptTemplate.from_messages(
+        [
+            SystemMessage(
+                content="You are a chatbot having a conversation with a human."
+            ),  # The persistent system prompt
+            MessagesPlaceholder(
+                variable_name="chat_history"
+            ),  # Where the memory will be stored.
+            HumanMessagePromptTemplate.from_template(
+                "{human_input}"
+            ),  # Where the human input will injected
+        ]
+    )
+    memory = ConversationSummaryBufferMemory(llm=llm, max_token_limit=MAX_TOKEN_LIMIT)
+    chain = ConversationChain(llm=llm, prompt=prompt, memory=memory, verbose=True)
+    result = chain.predict(human_input="Hi there my friend")
 
     name = "Philippe"
 
@@ -196,6 +240,22 @@ def run_chatbot(n_clicks, n_submit, user_input, chat_history, api_key):
         {name}: Hello! Glad to be talking to you today.
         """
     )
+    prompt = ""
+
+    if url is not None:
+        web_content = get_url_content(url)
+        prompt = dedent(
+            f"""
+            以下の Web Page 情報を元に質問に答えてください。
+
+            ```
+            {web_content}
+            ```
+
+            You: Hello {name}!
+            {name}: Hello! Glad to be talking to you today.
+            """
+        )
 
     # First add the user input to the chat history
     chat_history += f"You: {user_input}<split>{name}:"
@@ -219,6 +279,7 @@ def run_chatbot(n_clicks, n_submit, user_input, chat_history, api_key):
     model_output = response.choices[0].message.content
 
     chat_history += f"{model_output}<split>"
+
 
     return chat_history, None
 

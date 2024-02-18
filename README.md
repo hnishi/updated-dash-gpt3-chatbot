@@ -24,6 +24,15 @@ Deploy
 gcloud run deploy --update-env-vars OPENAI_API_KEY=sk-xxx
 ```
 
+## 参考
+
+### Dash App
+
+ディレクトリ構造の参考
+
+- <https://github.com/AntoniDabrowski/RI-DASH/tree/main>
+- <https://github.com/mnguyen0226/rental_gpt_dash/tree/main/dash>
+
 ---
 
 *Disclaimer: This app was created to help you learn Dash and try the OpenAI API beta. Feel free to use the source code for building private prototypes. If you are planning to deploy GPT-3 based apps, please make sure to reach out to support@openai.com for a proper review.*
