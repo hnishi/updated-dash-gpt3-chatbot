@@ -1,3 +1,4 @@
+import os
 from textwrap import dedent
 
 import dash
@@ -5,12 +6,12 @@ from dash import html
 from dash import dcc
 import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output, State
-from openai import OpenAI
+
+# from openai import OpenAI
+from openai import AzureOpenAI
 from dotenv import load_dotenv
 
 load_dotenv()
-# client = OpenAI()
-# client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 
 def Header(name, app):
@@ -87,22 +88,22 @@ conversation = html.Div(
     },
 )
 
-api_key_input = dbc.InputGroup(
-    children=[
-        dbc.Input(
-            id="api-key-input", placeholder="Set your OpenAI API Key", type="text"
-        ),
-    ]
-)
+# api_key_input = dbc.InputGroup(
+#     children=[
+#         dbc.Input(
+#             id="api-key-input", placeholder="Set your OpenAI API Key", type="text"
+#         ),
+#     ]
+# )
 
-api_key_alert = dbc.Alert(
-    "API Key is not set.",
-    id="api-key-alert",
-    dismissable=True,
-    fade=False,
-    is_open=True,
-    color="danger",
-)
+# api_key_alert = dbc.Alert(
+#     "API Key is not set.",
+#     id="api-key-alert",
+#     dismissable=True,
+#     fade=False,
+#     is_open=True,
+#     color="danger",
+# )
 
 
 controls = dbc.InputGroup(
@@ -116,13 +117,9 @@ controls = dbc.InputGroup(
 app.layout = dbc.Container(
     fluid=False,
     children=[
-        # q: How can I change the logo?
-        # a: Replace the file dash-logo.png in the assets folder
         Header("Dash GPT-3 Chatbot", app),
-        # q: what does the following line do?
-        # a: it adds a horizontal line
-        api_key_input,
-        api_key_alert,
+        # api_key_input,
+        # api_key_alert,
         html.Hr(),
         dcc.Store(id="store-conversation", data=""),
         conversation,
@@ -132,15 +129,15 @@ app.layout = dbc.Container(
 )
 
 
-@app.callback(
-    Output("api-key-alert", "is_open"),
-    [Input("api-key-input", "value")],
-    [State("api-key-alert", "is_open")],
-)
-def toggle_alert_no_fade(api_key, is_open):
-    if api_key is not None and api_key != "":
-        return False
-    return True
+# @app.callback(
+#     Output("api-key-alert", "is_open"),
+#     [Input("api-key-input", "value")],
+#     [State("api-key-alert", "is_open")],
+# )
+# def toggle_alert_no_fade(api_key, is_open):
+#     if api_key is not None and api_key != "":
+#         return False
+#     return True
 
 
 @app.callback(
@@ -163,23 +160,23 @@ def clear_input(n_clicks, n_submit):
 
 @app.callback(
     [Output("store-conversation", "data"), Output("loading-component", "children")],
-    # q: What does the following line do?
-    # a: It triggers the callback when the button with id "submit" is clicked
-    # q: Describe Input() function arguments
-    # a: The first argument is the id of the component that triggers the callback.
-    #   The second argument is the property of the component that triggers the callback.
     [Input("submit", "n_clicks"), Input("user-input", "n_submit")],
     [
         State("user-input", "value"),
         State("store-conversation", "data"),
-        State("api-key-input", "value"),
+        # State("api-key-input", "value"),
     ],
 )
-def run_chatbot(n_clicks, n_submit, user_input, chat_history, api_key):
-    if api_key is None or api_key == "":
-        return chat_history, None
-    client = OpenAI(api_key=api_key)
-
+# def run_chatbot(n_clicks, n_submit, user_input, chat_history, api_key):
+def run_chatbot(n_clicks, n_submit, user_input, chat_history):
+    # if api_key is None or api_key == "":
+    #     return chat_history, None
+    # client = OpenAI(api_key=api_key)
+    client = AzureOpenAI(
+        api_key=os.getenv("AZURE_OPEN_AI_API_KEY"),
+        api_version=os.getenv("API_VERSION"),
+        azure_endpoint=os.getenv("AZURE_ENDPOINT"),
+    )
     if n_clicks == 0 and n_submit is None:
         return "", None
 
@@ -214,7 +211,10 @@ def run_chatbot(n_clicks, n_submit, user_input, chat_history, api_key):
             "content": model_input,
         }
     ]
-    response = client.chat.completions.create(model="gpt-3.5-turbo", messages=messages)
+    response = client.chat.completions.create(
+        model=os.getenv("AZURE_DEPLOYMENT_NAME"), messages=messages
+    )
+
     print(response)
     model_output = response.choices[0].message.content
 
