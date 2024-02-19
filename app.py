@@ -173,9 +173,9 @@ def run_chatbot(n_clicks, n_submit, user_input, chat_history):
     #     return chat_history, None
     # client = OpenAI(api_key=api_key)
     client = AzureOpenAI(
-        api_key=os.getenv("AZURE_OPEN_AI_API_KEY"),
-        api_version=os.getenv("API_VERSION"),
-        azure_endpoint=os.getenv("AZURE_ENDPOINT"),
+        api_key=os.getenv("AZURE_OPENAI_API_KEY"),
+        api_version=os.getenv("AZURE_OPENAI_API_VERSION"),
+        azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
     )
     if n_clicks == 0 and n_submit is None:
         return "", None
@@ -212,7 +212,7 @@ def run_chatbot(n_clicks, n_submit, user_input, chat_history):
         }
     ]
     response = client.chat.completions.create(
-        model=os.getenv("AZURE_DEPLOYMENT_NAME"), messages=messages
+        model=os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME"), messages=messages
     )
 
     print(response)
