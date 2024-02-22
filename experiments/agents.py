@@ -110,8 +110,8 @@ agent_executor = AgentExecutor(
     return_intermediate_steps=True,
 )
 response = agent_executor.invoke(
-    # {"input": "ワイン投資とは何ですか？日本語で回答してください。"}
-    {"input": "ワイン投資に関する4択問題を考えてください。"}
+    {"input": "ワイン投資とは何ですか？日本語で回答してください。"}
+    # {"input": "ワイン投資に関する4択問題を考えてください。"}
 )
 # response = agent_executor.invoke({"input": "1234*321 の答えは何ですか？日本語で答えてください。"})
 # response = agent_executor.invoke({"input": "Answer 1234*321"})
