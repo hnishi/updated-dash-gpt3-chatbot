@@ -72,7 +72,7 @@ def translate2jp(text: str) -> str:
 print(translate2en.name)
 print(translate2en.description)
 print(translate2en.args)
-print(translate2en("ワイン投資とは何ですか？"))
+# print(translate2en("ワイン投資とは何ですか？"))
 # exit()
 
 # translate_tool = Tool(
@@ -110,7 +110,8 @@ agent_executor = AgentExecutor(
     return_intermediate_steps=True,
 )
 response = agent_executor.invoke(
-    {"input": "ワイン投資とは何ですか？日本語で回答してください。"}
+    # {"input": "ワイン投資とは何ですか？日本語で回答してください。"}
+    {"input": "ワイン投資に関する4択問題を考えてください。"}
 )
 # response = agent_executor.invoke({"input": "1234*321 の答えは何ですか？日本語で答えてください。"})
 # response = agent_executor.invoke({"input": "Answer 1234*321"})
