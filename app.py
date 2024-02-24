@@ -92,18 +92,16 @@ api_key_input = dbc.InputGroup(
         dbc.Input(
             id="api-key-input", placeholder="Set your OpenAI API Key", type="text"
         ),
+        dbc.Alert(
+            "API Key is not set.",
+            id="api-key-alert",
+            dismissable=True,
+            fade=False,
+            is_open=True,
+            color="danger",
+        )
     ]
 )
-
-api_key_alert = dbc.Alert(
-    "API Key is not set.",
-    id="api-key-alert",
-    dismissable=True,
-    fade=False,
-    is_open=True,
-    color="danger",
-)
-
 
 controls = dbc.InputGroup(
     children=[
@@ -122,7 +120,12 @@ app.layout = dbc.Container(
         # q: what does the following line do?
         # a: it adds a horizontal line
         api_key_input,
-        api_key_alert,
+        dbc.Input(
+            id="url-input", placeholder="Set URL (Optional)", type="text"
+        ),
+        dbc.Input(
+            id="theme-input", placeholder="Set Theme (Optional)", type="text"
+        ),
         html.Hr(),
         dcc.Store(id="store-conversation", data=""),
         conversation,
